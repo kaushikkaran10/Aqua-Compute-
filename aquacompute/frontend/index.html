@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AquaCompute</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #0B1F3A;
+      color: #F8FAFC;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background-color: #102A4C;
+      border-bottom: 1px solid rgba(34, 211, 238, 0.2);
+      padding: 0 1.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .nav-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+    .logo {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #22D3EE;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+    }
+    nav {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .nav-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 0 1rem;
+      color: #94A3B8;
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: 500;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+    .nav-link:hover {
+      color: #F8FAFC;
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+    .nav-link.active {
+      color: #22D3EE;
+      background-color: rgba(34, 211, 238, 0.1);
+      border: 1px solid rgba(34, 211, 238, 0.3);
+    }
+    main {
+      flex: 1;
+      max-width: 1000px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+    .page {
+      display: none;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    .page.active {
+      display: flex;
+    }
+    .card {
+      background-color: #102A4C;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 1.25rem;
+    }
+    /* Chat page styles */
+    .examples-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    .examples-label {
+      font-size: 0.85rem;
+      color: #94A3B8;
+      margin-right: 0.25rem;
+    }
+    .btn-example {
+      display: inline-flex;
+      align-items: center;
+      min-height: 44px;
+      padding: 0 0.85rem;
+      background: rgba(34, 211, 238, 0.08);
+      border: 1px solid rgba(34, 211, 238, 0.25);
+      border-radius: 8px;
+      color: #22D3EE;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-example:hover {
+      background: rgba(34, 211, 238, 0.2);
+    }
+    .chat-messages {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      min-height: 250px;
+    }
+    .msg-user {
+      align-self: flex-end;
+      background-color: #1e3a66;
+      border: 1px solid rgba(34, 211, 238, 0.3);
+      border-radius: 12px 12px 2px 12px;
+      padding: 0.85rem 1.1rem;
+      max-width: 80%;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      word-break: break-word;
+      white-space: pre-wrap;
+    }
+    .msg-assistant {
+      align-self: flex-start;
+      background-color: #102A4C;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px 12px 12px 2px;
+      padding: 1.1rem;
+      max-width: 90%;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      line-height: 1.5;
+    }
+    .msg-error {
+      background-color: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #FCA5A5;
+      border-radius: 8px;
+      padding: 0.85rem 1rem;
+      font-size: 0.9rem;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.2rem 0.6rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .chip-small {
+      background: rgba(52, 211, 153, 0.15);
+      color: #34D399;
+      border: 1px solid rgba(52, 211, 153, 0.3);
+    }
+    .chip-medium {
+      background: rgba(34, 211, 238, 0.15);
+      color: #22D3EE;
+      border: 1px solid rgba(34, 211, 238, 0.3);
+    }
+    .chip-large {
+      background: rgba(245, 158, 11, 0.15);
+      color: #F59E0B;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    .tag-assumption {
+      background: rgba(245, 158, 11, 0.15);
+      color: #F59E0B;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      padding: 0.15rem 0.5rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      display: inline-block;
+    }
+    .tag-positive {
+      background: rgba(52, 211, 153, 0.15);
+      color: #34D399;
+      border: 1px solid rgba(52, 211, 153, 0.3);
+      padding: 0.15rem 0.5rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .meta-line {
+      font-size: 0.85rem;
+      color: #94A3B8;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .meta-line strong {
+      color: #F8FAFC;
+    }
+    .reply-text {
+      color: #E2E8F0;
+      font-size: 0.95rem;
+      white-space: pre-wrap;
+      word-break: break-word;
+      padding: 0.4rem 0;
+    }
+    .footprint-link-line {
+      font-size: 0.82rem;
+      color: #94A3B8;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 0.5rem;
+    }
+    .footprint-link-line a {
+      color: #22D3EE;
+      text-decoration: none;
+      font-weight: 500;
+      margin-left: 0.35rem;
+    }
+    .footprint-link-line a:hover {
+      text-decoration: underline;
+    }
+    .chat-form {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+    }
+    .input-prompt {
+      flex: 1;
+      min-height: 44px;
+      background-color: #102A4C;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      padding: 0.65rem 1rem;
+      color: #F8FAFC;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .input-prompt:focus {
+      border-color: #22D3EE;
+    }
+    .btn-send {
+      min-height: 44px;
+      min-width: 100px;
+      padding: 0 1.25rem;
+      background-color: #22D3EE;
+      color: #0B1F3A;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.2s;
+    }
+    .btn-send:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    /* Footprint page styles */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 1rem;
+    }
+    .summary-card {
+      background-color: #102A4C;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 1.1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .summary-title {
+      font-size: 0.8rem;
+      color: #94A3B8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .summary-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #F8FAFC;
+      display: flex;
+      align-items: baseline;
+      gap: 0.4rem;
+    }
+    .note-box {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.85rem;
+      color: #94A3B8;
+      background-color: rgba(16, 42, 76, 0.6);
+      border-left: 3px solid #F59E0B;
+      padding: 0.75rem 1rem;
+      border-radius: 0 8px 8px 0;
+    }
+    .table-container {
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      text-align: left;
+    }
+    th {
+      background-color: rgba(255, 255, 255, 0.03);
+      color: #94A3B8;
+      font-weight: 600;
+      padding: 0.75rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      white-space: nowrap;
+    }
+    td {
+      padding: 0.75rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      color: #E2E8F0;
+      white-space: nowrap;
+    }
+    tr:hover td {
+      background-color: rgba(255, 255, 255, 0.02);
+    }
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: #94A3B8;
+      font-size: 1rem;
+    }
+    @media (max-width: 640px) {
+      .chat-form {
+        flex-direction: column;
+      }
+      .btn-send {
+        width: 100%;
+      }
+      .msg-user, .msg-assistant {
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="nav-container">
+      <a href="#chat" class="logo">
+        <span>AquaCompute</span>
+      </a>
+      <nav>
+        <a href="#chat" id="nav-chat" class="nav-link active">Chat</a>
+        <a href="#footprint" id="nav-footprint" class="nav-link">Footprint</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- Chat Page -->
+    <section id="page-chat" class="page active">
+      <div class="examples-bar">
+        <span class="examples-label">Examples:</span>
+        <button type="button" class="btn-example" data-prompt="What is the capital of France?">Easy (Small)</button>
+        <button type="button" class="btn-example" data-prompt="Compare and optimize Python list vs tuple memory efficiency.">Medium (Balanced)</button>
+        <button type="button" class="btn-example" data-prompt="Prove step by step that x^2 = 2 has no rational solution.">Hard (Large)</button>
+      </div>
+
+      <div id="chat-messages" class="chat-messages">
+        <!-- Messages appended dynamically -->
+      </div>
+
+      <form id="chat-form" class="chat-form">
+        <input
+          type="text"
+          id="prompt-input"
+          class="input-prompt"
+          placeholder="Ask a question or enter a task..."
+          autocomplete="off"
+        />
+        <button type="submit" id="btn-send" class="btn-send">Send</button>
+      </form>
+    </section>
+
+    <!-- Footprint Page -->
+    <section id="page-footprint" class="page">
+      <div class="note-box">
+        <span>Estimates, not measurements. Factors are illustrative assumptions.</span>
+        <span id="placeholder-tag" class="tag-assumption" style="display: none;">placeholder estimate</span>
+      </div>
+
+      <div class="summary-grid">
+        <div class="summary-card">
+          <span class="summary-title">Requests</span>
+          <span class="summary-value" id="sum-requests">0</span>
+        </div>
+        <div class="summary-card">
+          <span class="summary-title">Water (L)</span>
+          <span class="summary-value" id="sum-water">0</span>
+        </div>
+        <div class="summary-card">
+          <span class="summary-title">Carbon (g)</span>
+          <span class="summary-value" id="sum-carbon">0</span>
+        </div>
+        <div class="summary-card">
+          <span class="summary-title">Energy (kWh)</span>
+          <span class="summary-value" id="sum-energy">0</span>
+        </div>
+        <div class="summary-card">
+          <span class="summary-title">Saved vs Always Large</span>
+          <span class="summary-value">
+            <span id="sum-saved">0%</span>
+            <span class="tag-positive" id="sum-saved-badge">0%</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="card" id="latest-card" style="display: none;">
+        <h3 style="font-size: 1rem; color: #22D3EE; margin-bottom: 0.75rem;">Latest Request</h3>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.9rem;">
+          <div><span style="color: #94A3B8;">Prompt: </span><strong id="latest-prompt"></strong></div>
+          <div><span style="color: #94A3B8;">Model: </span><span id="latest-model"></span></div>
+          <div><span style="color: #94A3B8;">Tokens: </span><span id="latest-tokens"></span></div>
+          <div><span style="color: #94A3B8;">Water Footprint: </span><strong id="latest-water" style="color: #22D3EE;"></strong></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="font-size: 1rem; color: #F8FAFC; margin-bottom: 1rem;">All Requests</h3>
+        <div id="table-wrap" class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Prompt</th>
+                <th>Tier</th>
+                <th>Model</th>
+                <th>Tokens</th>
+                <th>Energy (kWh)</th>
+                <th>Water (L)</th>
+                <th>Carbon (g)</th>
+              </tr>
+            </thead>
+            <tbody id="history-tbody">
+              <!-- Dynamically populated rows -->
+            </tbody>
+          </table>
+        </div>
+        <div id="empty-state" class="empty-state" style="display: none;">
+          No requests yet. Ask something on the Chat page.
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      // DOM Elements
+      const navChat = document.getElementById("nav-chat");
+      const navFootprint = document.getElementById("nav-footprint");
+      const pageChat = document.getElementById("page-chat");
+      const pageFootprint = document.getElementById("page-footprint");
+      const chatMessages = document.getElementById("chat-messages");
+      const chatForm = document.getElementById("chat-form");
+      const promptInput = document.getElementById("prompt-input");
+      const btnSend = document.getElementById("btn-send");
+
+      // Footprint Elements
+      const sumRequests = document.getElementById("sum-requests");
+      const sumWater = document.getElementById("sum-water");
+      const sumCarbon = document.getElementById("sum-carbon");
+      const sumEnergy = document.getElementById("sum-energy");
+      const sumSaved = document.getElementById("sum-saved");
+      const sumSavedBadge = document.getElementById("sum-saved-badge");
+      const placeholderTag = document.getElementById("placeholder-tag");
+      const latestCard = document.getElementById("latest-card");
+      const latestPrompt = document.getElementById("latest-prompt");
+      const latestModel = document.getElementById("latest-model");
+      const latestTokens = document.getElementById("latest-tokens");
+      const latestWater = document.getElementById("latest-water");
+      const historyTbody = document.getElementById("history-tbody");
+      const emptyState = document.getElementById("empty-state");
+      const tableWrap = document.getElementById("table-wrap");
+
+      // Routing
+      function handleRoute() {
+        const hash = window.location.hash || "#chat";
+        if (hash === "#footprint") {
+          navChat.classList.remove("active");
+          navFootprint.classList.add("active");
+          pageChat.classList.remove("active");
+          pageFootprint.classList.add("active");
+          loadHistory();
+        } else {
+          navFootprint.classList.remove("active");
+          navChat.classList.add("active");
+          pageFootprint.classList.remove("active");
+          pageChat.classList.add("active");
+        }
+      }
+
+      window.addEventListener("hashchange", handleRoute);
+      handleRoute();
+
+      // Example Buttons
+      document.querySelectorAll(".btn-example").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          promptInput.value = btn.getAttribute("data-prompt") || "";
+          promptInput.focus();
+        });
+      });
+
+      // Chat Form Submission
+      chatForm.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        const text = promptInput.value.trim();
+        if (!text) {
+          showError("Prompt cannot be empty.");
+          return;
+        }
+
+        // Add user message
+        addUserMessage(text);
+        promptInput.value = "";
+        btnSend.disabled = true;
+        btnSend.textContent = "Thinking…";
+
+        try {
+          const res = await fetch("/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ prompt: text, region: "IN" }),
+          });
+
+          if (!res.ok) {
+            let errText = "Error processing request";
+            try {
+              const errData = await res.json();
+              if (errData && errData.detail) {
+                errText = typeof errData.detail === "string" ? errData.detail : JSON.stringify(errData.detail);
+              }
+            } catch (_) {
+              errText = res.statusText || ("HTTP " + res.status);
+            }
+            showError("Server error (" + res.status + "): " + errText);
+            return;
+          }
+
+          const data = await res.json();
+          addAssistantMessage(data);
+        } catch (err) {
+          showError("Unable to reach backend server. Please check your connection.");
+        } finally {
+          btnSend.disabled = false;
+          btnSend.textContent = "Send";
+        }
+      });
+
+      function addUserMessage(text) {
+        const div = document.createElement("div");
+        div.className = "msg-user";
+        div.textContent = text;
+        chatMessages.appendChild(div);
+        div.scrollIntoView({ behavior: "smooth" });
+      }
+
+      function showError(text) {
+        const div = document.createElement("div");
+        div.className = "msg-error";
+        div.textContent = text;
+        chatMessages.appendChild(div);
+        div.scrollIntoView({ behavior: "smooth" });
+      }
+
+      function addAssistantMessage(data) {
+        const container = document.createElement("div");
+        container.className = "msg-assistant";
+
+        // Line 1: Tier chip & assigned model
+        const line1 = document.createElement("div");
+        line1.className = "meta-line";
+
+        const chip = document.createElement("span");
+        const tier = data.routing.tier;
+        chip.className = "chip chip-" + tier;
+        chip.textContent = tier;
+        line1.appendChild(chip);
+
+        const modelSpan = document.createElement("span");
+        modelSpan.textContent = "For this prompt, " + data.routing.model_name + " was assigned.";
+        line1.appendChild(modelSpan);
+        container.appendChild(line1);
+
+        // Line 2: Reason
+        const line2 = document.createElement("div");
+        line2.className = "meta-line";
+        const strongWhy = document.createElement("strong");
+        strongWhy.textContent = "Why: ";
+        line2.appendChild(strongWhy);
+        const reasonSpan = document.createElement("span");
+        reasonSpan.textContent = data.routing.reason;
+        line2.appendChild(reasonSpan);
+        container.appendChild(line2);
+
+        // Line 3: Reply text
+        const replyDiv = document.createElement("div");
+        replyDiv.className = "reply-text";
+        replyDiv.textContent = data.reply;
+        container.appendChild(replyDiv);
+
+        // Line 4: Footprint link
+        const line4 = document.createElement("div");
+        line4.className = "footprint-link-line";
+        line4.textContent = "Footprint: " + data.footprint.water_l + " L water · " + data.footprint.carbon_g + " g CO₂ — ";
+        const link = document.createElement("a");
+        link.href = "#footprint";
+        link.textContent = "view details";
+        line4.appendChild(link);
+        container.appendChild(line4);
+
+        chatMessages.appendChild(container);
+        container.scrollIntoView({ behavior: "smooth" });
+      }
+
+      // Load Footprint History
+      async function loadHistory() {
+        try {
+          const res = await fetch("/history");
+          if (!res.ok) {
+            throw new Error("HTTP " + res.status);
+          }
+          const data = await res.json();
+          renderHistory(data);
+        } catch (err) {
+          emptyState.style.display = "block";
+          emptyState.textContent = "Unable to load footprint history from server.";
+          tableWrap.style.display = "none";
+          latestCard.style.display = "none";
+        }
+      }
+
+      function renderHistory(data) {
+        const runs = data.runs || [];
+        const totals = data.totals || {};
+
+        sumRequests.textContent = totals.requests || 0;
+        sumWater.textContent = totals.water_l || 0;
+        sumCarbon.textContent = totals.carbon_g || 0;
+        sumEnergy.textContent = totals.energy_kwh || 0;
+        const savedVal = (totals.saved_percent || 0) + "%";
+        sumSaved.textContent = savedVal;
+        sumSavedBadge.textContent = savedVal;
+
+        // Show placeholder tag if basis is placeholder
+        if (runs.length > 0) {
+          placeholderTag.style.display = "inline-block";
+        } else {
+          placeholderTag.style.display = "none";
+        }
+
+        if (runs.length === 0) {
+          emptyState.style.display = "block";
+          emptyState.textContent = "No requests yet. Ask something on the Chat page.";
+          tableWrap.style.display = "none";
+          latestCard.style.display = "none";
+          return;
+        }
+
+        emptyState.style.display = "none";
+        tableWrap.style.display = "block";
+
+        // Latest Request Card (last run in oldest-first array)
+        const latest = runs[runs.length - 1];
+        latestCard.style.display = "block";
+        latestPrompt.textContent = latest.prompt;
+        latestModel.textContent = latest.model_name + " (" + latest.tier + ")";
+        const totalTok = latest.input_tokens + latest.output_tokens;
+        latestTokens.textContent = latest.input_tokens + " in + " + latest.output_tokens + " out = " + totalTok + " total";
+        latestWater.textContent = latest.direct_water_l + " L direct + " + latest.indirect_water_l + " L indirect = " + latest.water_l + " L total";
+
+        // Populate Table (newest first for readability)
+        historyTbody.textContent = "";
+        const reversedRuns = runs.slice().reverse();
+        reversedRuns.forEach(function (r) {
+          const tr = document.createElement("tr");
+
+          const tdPrompt = document.createElement("td");
+          tdPrompt.textContent = r.prompt.length > 40 ? r.prompt.slice(0, 40) + "…" : r.prompt;
+          tr.appendChild(tdPrompt);
+
+          const tdTier = document.createElement("td");
+          const chip = document.createElement("span");
+          chip.className = "chip chip-" + r.tier;
+          chip.textContent = r.tier;
+          tdTier.appendChild(chip);
+          tr.appendChild(tdTier);
+
+          const tdModel = document.createElement("td");
+          tdModel.textContent = r.model_name;
+          tr.appendChild(tdModel);
+
+          const tdTokens = document.createElement("td");
+          tdTokens.textContent = (r.input_tokens + r.output_tokens).toString();
+          tr.appendChild(tdTokens);
+
+          const tdEnergy = document.createElement("td");
+          tdEnergy.textContent = r.energy_kwh.toString();
+          tr.appendChild(tdEnergy);
+
+          const tdWater = document.createElement("td");
+          tdWater.textContent = r.water_l.toString();
+          tr.appendChild(tdWater);
+
+          const tdCarbon = document.createElement("td");
+          tdCarbon.textContent = r.carbon_g.toString();
+          tr.appendChild(tdCarbon);
+
+          historyTbody.appendChild(tr);
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+# Environment variables & secrets
+.env
+*.env
+aquacompute/backend/.env
+
+# SQLite databases
+*.db
+*.sqlite3
+
+# Python cache & build
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
